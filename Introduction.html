@@ -1,0 +1,1072 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visualisasi Cloud Computing & Mapping Sistem - Disnaker 2026</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Lato:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        :root {
+            --primary: #0c4a6e;
+            --primary-light: #0284c7;
+            --accent: #0ea5e9;
+            --accent-bg: #e0f2fe;
+            --dark: #0f172a;
+            --light: #f8fafc;
+            --border: #e2e8f0;
+            --success: #10b981;
+            --warning: #f59e0b;
+        }
+
+        body {
+            background-color: #0f172a;
+            font-family: 'Lato', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .presentation-wrapper {
+            width: 1280px;
+            height: 720px;
+            position: relative;
+            transform-origin: center center;
+            flex-shrink: 0;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            background: #ffffff;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--accent), var(--primary-light));
+            transition: width 0.4s ease;
+            z-index: 20;
+            border-radius: 0 2px 0 0;
+        }
+
+        .slide {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            padding: 45px 70px 55px 70px;
+            display: none;
+            flex-direction: column;
+            justify-content: space-between;
+            background: #ffffff;
+            z-index: 1;
+            opacity: 0;
+            transition: opacity 0.35s ease;
+        }
+
+        .slide.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        @keyframes slideFadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        .slide.active { animation: slideFadeIn 0.4s ease forwards; }
+
+        .slide.active.bleed-layout {
+            display: grid;
+            padding: 0;
+        }
+
+        .slide::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle at 100% 0%, rgba(14,165,233,0.06) 0%, transparent 45%),
+                        radial-gradient(circle at 0% 100%, rgba(12,74,110,0.04) 0%, transparent 45%);
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .bleed-layout::before,
+        .center-slide::before { display: none; }
+        .slide > * { position: relative; z-index: 2; }
+
+        .content-area {
+            flex: 1;
+            min-height: 0;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        h1, h2, h3, h4 {
+            color: var(--primary);
+            font-family: 'Poppins', sans-serif;
+            font-weight: 700;
+        }
+        h1 { font-size: 56px; line-height: 1.15; }
+
+        .slide-title {
+            font-size: 36px;
+            margin-bottom: 20px;
+            border-left: 8px solid var(--accent);
+            padding-left: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-shrink: 0;
+            line-height: 1.3;
+        }
+
+        .slide-title span.badge {
+            font-size: 13px;
+            background: var(--accent-bg);
+            color: var(--primary-light);
+            padding: 5px 14px;
+            border-radius: 20px;
+            font-family: 'Lato', sans-serif;
+            font-weight: 700;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        h3 { font-size: 22px; color: var(--primary-light); margin-bottom: 10px; }
+        p, li { font-size: 16px; line-height: 1.55; color: #475569; }
+        strong { color: var(--dark); }
+
+        .two-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 35px;
+            align-items: start;
+            width: 100%;
+            flex: 1;
+            min-height: 0;
+        }
+
+        .three-column {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 18px;
+            width: 100%;
+            flex: 1;
+            min-height: 0;
+        }
+
+        .tile {
+            background: #ffffff;
+            border: 1px solid var(--border);
+            border-top: 4px solid var(--accent);
+            border-radius: 12px;
+            padding: 18px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .tile:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.08);
+        }
+
+        .tile .icon { font-size: 34px; color: var(--accent); margin-bottom: 2px; }
+
+        /* ===== TABS ===== */
+        .tab-container {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            height: 100%;
+            min-height: 0;
+        }
+
+        .tab-headers {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 15px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 10px;
+            flex-shrink: 0;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            background: var(--light);
+            border: 1px solid var(--border);
+            padding: 8px 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 600;
+            font-size: 13px;
+            color: var(--primary);
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        .tab-btn:hover { background: var(--accent-bg); border-color: var(--accent); }
+
+        .tab-btn.active {
+            background: var(--primary);
+            color: #ffffff;
+            border-color: var(--primary);
+        }
+
+        .tab-btn i { pointer-events: none; }
+
+        .tab-content {
+            display: none;
+            flex: 1;
+            min-height: 0;
+            overflow-y: auto;
+            padding-right: 8px;
+        }
+
+        .tab-content.active { display: block; }
+
+        .tab-content::-webkit-scrollbar { width: 5px; }
+        .tab-content::-webkit-scrollbar-track { background: var(--light); border-radius: 3px; }
+        .tab-content::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+
+        /* ===== TABLES ===== */
+        .table-wrapper {
+            width: 100%;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+            background: #ffffff;
+        }
+
+        table { width: 100%; border-collapse: collapse; text-align: left; }
+
+        th {
+            background: var(--primary);
+            color: #ffffff;
+            padding: 11px 14px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 13px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        td {
+            padding: 10px 14px;
+            border-bottom: 1px solid var(--border);
+            font-size: 13px;
+            color: #475569;
+            vertical-align: top;
+        }
+
+        tr:last-child td { border-bottom: none; }
+        tr:nth-child(even) { background-color: var(--light); }
+
+        /* ===== HIGHLIGHT BOXES ===== */
+        .analogy-box {
+            background: var(--accent-bg);
+            border-left: 6px solid var(--accent);
+            padding: 16px 18px;
+            border-radius: 0 12px 12px 0;
+            margin-top: 12px;
+            flex-shrink: 0;
+        }
+
+        .info-badge {
+            display: inline-block;
+            background: #fef3c7;
+            color: #92400e;
+            padding: 3px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        /* ===== CHARTS ===== */
+        .chart-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            width: 100%;
+        }
+
+        .chart-row {
+            display: grid;
+            grid-template-columns: 150px 1fr;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .chart-label {
+            font-weight: 700;
+            color: var(--primary);
+            text-align: right;
+            font-size: 13px;
+            line-height: 1.3;
+        }
+
+        .chart-bars { display: flex; flex-direction: column; gap: 4px; }
+
+        .bar-row { display: flex; align-items: center; gap: 10px; }
+
+        .bar-container {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            background: var(--light);
+            height: 26px;
+            border-radius: 5px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+        }
+
+        .bar-fill {
+            height: 100%;
+            border-radius: 4px 0 0 4px;
+            transition: width 1s ease-in-out;
+        }
+
+        .bar-docker { background: linear-gradient(90deg, #0ea5e9, #0284c7); }
+        .bar-vm { background: linear-gradient(90deg, #94a3b8, #475569); }
+
+        .bar-text {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--dark);
+            white-space: nowrap;
+            min-width: 155px;
+        }
+
+        /* ===== TIMELINE ===== */
+        .timeline {
+            display: flex;
+            justify-content: space-between;
+            position: relative;
+            margin: 25px 0 15px 0;
+        }
+
+        .timeline-line {
+            position: absolute;
+            top: 25px; left: 5%; width: 90%; height: 4px;
+            background: var(--border); z-index: 1; border-radius: 2px;
+        }
+
+        .timeline-step {
+            width: 23%; text-align: center; position: relative; z-index: 2;
+        }
+
+        .step-num {
+            width: 52px; height: 52px; border-radius: 50%;
+            background: #ffffff; border: 4px solid var(--accent);
+            color: var(--primary); font-weight: 700; font-size: 20px;
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+
+        .timeline-step.active .step-num {
+            background: var(--accent); color: white;
+        }
+
+        /* ===== CODE BLOCK ===== */
+        .code-block {
+            background: #1e293b; color: #e2e8f0;
+            padding: 14px 18px; border-radius: 10px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 12.5px; line-height: 1.55;
+            overflow: auto; border: 1px solid #334155;
+            flex: 1; min-height: 0;
+        }
+
+        .code-block .kw  { color: #c084fc; }
+        .code-block .str { color: #86efac; }
+        .code-block .num { color: #fbbf24; }
+        .code-block .cmt { color: #64748b; font-style: italic; }
+        .code-block .key { color: #7dd3fc; }
+
+        /* ===== IMAGE ===== */
+        .image-wrapper-custom {
+            border-radius: 12px; overflow: hidden;
+            border: 1px solid var(--border);
+            height: 100%; min-height: 300px;
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+            background: #f1f5f9;
+        }
+
+        .image-wrapper-custom img {
+            width: 100%; height: 100%; object-fit: cover; display: block;
+        }
+
+        /* ===== BLEED LAYOUT ===== */
+        .bleed-layout {
+            display: grid; grid-template-columns: 1fr 1.1fr; gap: 0;
+        }
+
+        .bleed-text {
+            padding: 50px 60px;
+            display: flex; flex-direction: column;
+            justify-content: space-between; height: 100%;
+        }
+
+        .bleed-media {
+            height: 720px; border-left: 1px solid var(--border);
+            overflow: hidden; position: relative;
+        }
+
+        .bleed-media img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+        .bleed-media-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(to top, rgba(12,74,110,0.92) 10%, rgba(12,74,110,0.2) 60%, transparent 100%);
+            display: flex; flex-direction: column;
+            justify-content: flex-end; padding: 60px; color: white;
+        }
+
+        /* ===== FOOTER & CONTROLS ===== */
+        .slide-footer {
+            display: flex; justify-content: space-between; align-items: center;
+            padding-top: 14px; border-top: 1px solid var(--border);
+            font-size: 12px; color: #94a3b8; flex-shrink: 0;
+        }
+
+        .slide-controls {
+            position: absolute; bottom: 25px; right: 70px;
+            display: flex; align-items: center; gap: 12px; z-index: 10;
+        }
+
+        .control-btn {
+            background: rgba(255,255,255,0.95);
+            border: 1px solid var(--border);
+            width: 42px; height: 42px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; color: var(--primary);
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.08); font-size: 14px;
+        }
+
+        .control-btn:hover {
+            background: var(--primary); color: #ffffff; border-color: var(--primary);
+        }
+
+        .slide-indicator {
+            font-family: 'Poppins', sans-serif; font-weight: 600;
+            color: var(--primary); font-size: 14px; min-width: 55px;
+            text-align: center; background: rgba(255,255,255,0.95);
+            padding: 6px 12px; border-radius: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.06);
+        }
+
+        /* ===== CENTER / INTRO / OUTRO ===== */
+        .center-slide {
+            justify-content: center; align-items: center; text-align: center;
+            background: linear-gradient(135deg, #0c4a6e 0%, #0f172a 100%);
+            color: #ffffff;
+        }
+
+        .center-slide h1 { color: #ffffff; margin-bottom: 15px; font-size: 60px; }
+        .center-slide h1 span { color: var(--accent); }
+        .center-slide h3 { color: #e0f2fe; font-weight: 400; }
+        .center-slide p { color: #cbd5e1; }
+
+        /* ===== COMPACT TILE ===== */
+        .compact-tile {
+            background: #ffffff; border: 1px solid var(--border);
+            border-left: 4px solid var(--accent);
+            border-radius: 0 10px 10px 0;
+            padding: 10px 16px; display: flex;
+            align-items: center; gap: 14px;
+            transition: all 0.2s ease;
+        }
+
+        .compact-tile:hover { background: var(--light); transform: translateX(3px); }
+
+        .compact-tile i {
+            color: var(--accent); font-size: 22px;
+            flex-shrink: 0; width: 30px; text-align: center;
+        }
+
+        .compact-tile strong {
+            font-size: 14px; color: var(--primary); display: block; line-height: 1.2;
+        }
+
+        .compact-tile p {
+            font-size: 12px; margin: 2px 0 0 0; line-height: 1.4; color: #64748b;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="presentation-wrapper" id="presentation">
+        <div class="progress-bar" id="progress-bar" style="width: 5.88%;"></div>
+
+        <!-- SLIDE 1: COVER -->
+        <div class="slide active center-slide" id="slide-1">
+            <p style="text-transform: uppercase; letter-spacing: 5px; color: var(--accent); font-weight: 700; font-size: 14px;">Pelatihan Sertifikasi System Analyst 2026</p>
+            <h1 style="margin-top: 20px;">Cloud Computing &<br><span>Mapping Sistem</span></h1>
+            <h3 style="font-weight: 400; font-size: 21px; max-width: 700px;">Materi 22: Konsep, Virtualisasi, Containerization, & Implementasi SRS</h3>
+            <p style="margin-top: 35px; font-size: 14px; color: #94a3b8;">Dinas Tenaga Kerja Kota Bandung &bull; Standar Global Industri Modern</p>
+            <div style="display: flex; gap: 30px; margin-top: 35px;">
+                <div style="text-align: center; width: 100px;"><i class="fa-solid fa-cloud-arrow-up" style="font-size: 30px; color: var(--accent);"></i><p style="font-size: 11px; margin-top: 6px; color: #cbd5e1;">Cloud</p></div>
+                <div style="text-align: center; width: 100px;"><i class="fa-solid fa-box" style="font-size: 30px; color: var(--accent);"></i><p style="font-size: 11px; margin-top: 6px; color: #cbd5e1;">Containers</p></div>
+                <div style="text-align: center; width: 100px;"><i class="fa-solid fa-file-invoice" style="font-size: 30px; color: var(--accent);"></i><p style="font-size: 11px; margin-top: 6px; color: #cbd5e1;">SRS Mapping</p></div>
+            </div>
+        </div>
+
+        <!-- SLIDE 2: INDUSTRY STATS -->
+        <div class="slide" id="slide-2">
+            <div class="slide-title">Tren Industri Developer 2025/2026 <span class="badge">Stack Overflow Survey</span></div>
+            <div class="content-area">
+                <div class="two-column" style="align-items: center;">
+                    <div class="chart-wrapper">
+                        <h3>Adopsi Teknologi Global</h3>
+                        <p style="font-size: 14px; margin-bottom: 15px;">Laporan <b>Stack Overflow Developer Survey 2025</b> menunjukkan dominasi cloud dan containerization:</p>
+                        <div class="chart-row">
+                            <div class="chart-label">AWS Market Share</div>
+                            <div class="chart-bars">
+                                <div class="bar-row"><div class="bar-container"><div class="bar-fill bar-docker" style="width: 48%;"></div></div><span class="bar-text">48%</span></div>
+                            </div>
+                        </div>
+                        <div class="chart-row">
+                            <div class="chart-label">Adopsi Docker</div>
+                            <div class="chart-bars">
+                                <div class="bar-row"><div class="bar-container"><div class="bar-fill bar-docker" style="width: 71%;"></div></div><span class="bar-text">71.1%</span></div>
+                            </div>
+                        </div>
+                        <div class="chart-row">
+                            <div class="chart-label">Rencana Gunakan AI</div>
+                            <div class="chart-bars">
+                                <div class="bar-row"><div class="bar-container"><div class="bar-fill bar-docker" style="width: 84%;"></div></div><span class="bar-text">84%</span></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="tile" style="border-top-color: var(--warning);">
+                            <div class="icon" style="color: var(--warning);"><i class="fa-solid fa-circle-info"></i></div>
+                            <h3>Insight untuk System Analyst</h3>
+                            <p style="font-size: 14px;">Integrasi platform cloud global seperti <b>AWS/GCP/Azure</b> dengan modul containerization <b>Docker</b> merupakan kombinasi keahlian berstandar industri dengan kebutuhan pasar serta nilai kompensasi tertinggi saat ini.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="slide-footer"><span>Dinas Tenaga Kerja Kota Bandung</span><span>Materi 22: Cloud Computing &bull; Slide 2</span></div>
+        </div>
+
+        <!-- SLIDE 3: 5 KARAKTERISTIK NIST -->
+        <div class="slide" id="slide-3">
+            <div class="slide-title">Karakteristik Komputasi Awan <span class="badge">5 Esensi NIST</span></div>
+            <div class="content-area">
+                <div class="two-column" style="align-items: start;">
+                    <div>
+                        <h3>Apa Itu Cloud Computing?</h3>
+                        <p style="font-size: 15px;">Teknologi penyedia sumber daya digital (server, storage, database, network) secara virtual via internet dengan metode sewa tanpa mengelola infrastruktur fisik sendiri.</p>
+                        <div class="analogy-box" style="margin-top: 12px;">
+                            <span class="info-badge">Analogi Utilitas Listrik</span>
+                            <p style="font-size: 13px; line-height: 1.45; margin: 0;">Anda tidak perlu membangun pembangkit listrik di rumah untuk menyalakan lampu. Cukup hubungkan ke stopkontak, bayar tagihan sesuai watt yang dikonsumsi.</p>
+                        </div>
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                        <div class="compact-tile"><i class="fa-solid fa-bolt"></i><div><strong>1. On-Demand Self-Service</strong><p>Sumber daya langsung aktif saat dibutuhkan tanpa campur tangan manusia.</p></div></div>
+                        <div class="compact-tile"><i class="fa-solid fa-globe"></i><div><strong>2. Broad Network Access</strong><p>Akses menyeluruh dari mana saja lewat koneksi internet standar.</p></div></div>
+                        <div class="compact-tile"><i class="fa-solid fa-layer-group"></i><div><strong>3. Resource Pooling</strong><p>Resource fisik dipool bersama lalu dialokasikan dinamis sesuai permintaan multi-tenant.</p></div></div>
+                        <div class="compact-tile"><i class="fa-solid fa-arrows-up-down-left-right"></i><div><strong>4. Rapid Elasticity</strong><p>Mudah meningkatkan atau menurunkan performa CPU/RAM secara real-time.</p></div></div>
+                        <div class="compact-tile"><i class="fa-solid fa-gauge-high"></i><div><strong>5. Measured Service</strong><p>Penggunaan resource dipantau, dikontrol, dan ditagih secara transparan (pay-per-use).</p></div></div>
+                    </div>
+                </div>
+            </div>
+            <div class="slide-footer"><span>Dinas Tenaga Kerja Kota Bandung</span><span>Materi 22: Cloud Computing &bull; Slide 3</span></div>
+        </div>
+
+        <!-- SLIDE 4: MODEL LAYANAN (tabs menggunakan this) -->
+        <div class="slide" id="slide-4">
+            <div class="slide-title">Model Layanan Cloud <span class="badge">IaaS &bull; PaaS &bull; SaaS</span></div>
+            <div class="content-area">
+                <div class="two-column" style="grid-template-columns: 1.1fr 0.9fr;">
+                    <div class="tab-container">
+                        <div class="tab-headers">
+                            <button class="tab-btn active" onclick="switchTab(this, 'tab-iaas')">IaaS</button>
+                            <button class="tab-btn" onclick="switchTab(this, 'tab-paas')">PaaS</button>
+                            <button class="tab-btn" onclick="switchTab(this, 'tab-saas')">SaaS</button>
+                        </div>
+                        <div id="tab-iaas" class="tab-content active">
+                            <h3>Infrastructure as a Service</h3>
+                            <p style="margin-bottom: 10px; font-size: 14px;">Menyediakan infrastruktur dasar IT virtual: server, storage, dan jaringan.</p>
+                            <ul style="padding-left: 18px; font-size: 14px;">
+                                <li style="margin-bottom: 6px;"><b>User kelola:</b> OS, Middleware, Runtime, Data, Aplikasi</li>
+                                <li style="margin-bottom: 6px;"><b>Provider kelola:</b> Virtualisasi, Server Fisik, Storage, Jaringan</li>
+                                <li><b>Contoh:</b> AWS EC2, GCP Compute Engine, Azure VM</li>
+                            </ul>
+                        </div>
+                        <div id="tab-paas" class="tab-content">
+                            <h3>Platform as a Service</h3>
+                            <p style="margin-bottom: 10px; font-size: 14px;">Lingkungan runtime dan pengembangan aplikasi siap pakai tanpa setup OS.</p>
+                            <ul style="padding-left: 18px; font-size: 14px;">
+                                <li style="margin-bottom: 6px;"><b>User kelola:</b> Data & Aplikasi</li>
+                                <li style="margin-bottom: 6px;"><b>Provider kelola:</b> OS, Runtime, Middleware, Jaringan, Server</li>
+                                <li><b>Contoh:</b> AWS Elastic Beanstalk, Heroku, Google App Engine</li>
+                            </ul>
+                        </div>
+                        <div id="tab-saas" class="tab-content">
+                            <h3>Software as a Service</h3>
+                            <p style="margin-bottom: 10px; font-size: 14px;">Aplikasi jadi yang diakses langsung via browser tanpa instalasi lokal.</p>
+                            <ul style="padding-left: 18px; font-size: 14px;">
+                                <li style="margin-bottom: 6px;"><b>User kelola:</b> Hanya konfigurasi penggunaan personal</li>
+                                <li style="margin-bottom: 6px;"><b>Provider kelola:</b> Seluruh tumpukan aplikasi dan infrastruktur</li>
+                                <li><b>Contoh:</b> Google Drive, Zoom, Microsoft 365, Trello</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="analogy-box" style="background: #fff8e1; border-left-color: #f59e0b; margin-top: 0;">
+                            <span class="info-badge" style="background: #fef3c7; color: #b45309;">Analogi Pizza as a Service</span>
+                            <ul style="padding-left: 15px; font-size: 13px; list-style-type: none; display: flex; flex-direction: column; gap: 7px;">
+                                <li>🍕 <b>On-Premise:</b> Menguleni adonan, siapkan bahan, panggang di oven rumah sendiri.</li>
+                                <li>📦 <b>IaaS:</b> Beli pizza setengah matang, panggang sendiri di oven rumah.</li>
+                                <li>🛵 <b>PaaS:</b> Pizza diantar matang. Anda sediakan meja & alat makan.</li>
+                                <li>🏪 <b>SaaS:</b> Duduk manis di restoran, makan, bayar, lalu pulang.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="slide-footer"><span>Dinas Tenaga Kerja Kota Bandung</span><span>Materi 22: Cloud Computing &bull; Slide 4</span></div>
+        </div>
+
+        <!-- SLIDE 5: SHARED RESPONSIBILITY -->
+        <div class="slide" id="slide-5">
+            <div class="slide-title">Shared Responsibility Model <span class="badge">Keamanan & Pengelolaan</span></div>
+            <div class="content-area">
+                <div class="table-wrapper">
+                    <table>
+                        <thead><tr><th style="width:22%;">Elemen Teknologi</th><th style="width:19%;">On-Premise</th><th style="width:19%;">IaaS</th><th style="width:19%;">PaaS</th><th style="width:21%;">SaaS</th></tr></thead>
+                        <tbody>
+                            <tr><td><b>Aplikasi & Data</b></td><td style="color:var(--success);font-weight:700;font-size:12px;">Dikelola User</td><td style="color:var(--success);font-weight:700;font-size:12px;">Dikelola User</td><td style="color:var(--success);font-weight:700;font-size:12px;">Dikelola User</td><td style="color:var(--primary-light);font-weight:700;font-size:12px;">Dikelola Provider</td></tr>
+                            <tr><td><b>Runtime & Middleware</b></td><td style="color:var(--success);font-weight:700;font-size:12px;">Dikelola User</td><td style="color:var(--success);font-weight:700;font-size:12px;">Dikelola User</td><td style="color:var(--primary-light);font-weight:700;font-size:12px;">Dikelola Provider</td><td style="color:var(--primary-light);font-weight:700;font-size:12px;">Dikelola Provider</td></tr>
+                            <tr><td><b>Sistem Operasi (OS)</b></td><td style="color:var(--success);font-weight:700;font-size:12px;">Dikelola User</td><td style="color:var(--success);font-weight:700;font-size:12px;">Dikelola User</td><td style="color:var(--primary-light);font-weight:700;font-size:12px;">Dikelola Provider</td><td style="color:var(--primary-light);font-weight:700;font-size:12px;">Dikelola Provider</td></tr>
+                            <tr><td><b>Server, Storage & Network</b></td><td style="color:var(--success);font-weight:700;font-size:12px;">Dikelola User</td><td style="color:var(--primary-light);font-weight:700;font-size:12px;">Dikelola Provider</td><td style="color:var(--primary-light);font-weight:700;font-size:12px;">Dikelola Provider</td><td style="color:var(--primary-light);font-weight:700;font-size:12px;">Dikelola Provider</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="analogy-box" style="margin-top:12px;padding:12px 18px;">
+                    <p style="font-size:13px;margin:0;"><b>Golden Rule:</b> Provider bertanggung jawab atas keamanan <b>DARI</b> infrastruktur cloud (fisik, hardware, pusat data). User/Analyst bertanggung jawab atas keamanan data <b>DI DALAM</b> cloud (firewall, hak akses, enkripsi data).</p>
+                </div>
+            </div>
+            <div class="slide-footer"><span>Dinas Tenaga Kerja Kota Bandung</span><span>Materi 22: Cloud Computing &bull; Slide 5</span></div>
+        </div>
+
+        <!-- SLIDE 6: DEPLOYMENT MODEL -->
+        <div class="slide" id="slide-6">
+            <div class="slide-title">Jenis Deployment Model Cloud <span class="badge">Arsitektur Jaringan</span></div>
+            <div class="content-area">
+                <div class="three-column">
+                    <div class="tile"><div class="icon"><i class="fa-solid fa-users"></i></div><h3>Public Cloud</h3><p style="font-size:13px;">Infrastruktur digunakan bersama banyak organisasi (Multi-Tenant). Semua resource diatur virtual oleh pihak ketiga.</p><p style="font-size:12px;color:var(--primary-light);"><b>Contoh:</b> AWS, Azure, GCP, Alibaba Cloud.</p></div>
+                    <div class="tile" style="border-top-color:var(--success);"><div class="icon" style="color:var(--success);"><i class="fa-solid fa-lock"></i></div><h3>Private Cloud</h3><p style="font-size:13px;">Infrastruktur didedikasikan penuh untuk satu organisasi. Kontrol keamanan sangat ketat dan compliance tinggi.</p><p style="font-size:12px;color:var(--success);"><b>Contoh:</b> OpenStack internal BUMN, cloud privat bank.</p></div>
+                    <div class="tile" style="border-top-color:var(--warning);"><div class="icon" style="color:var(--warning);"><i class="fa-solid fa-shuffle"></i></div><h3>Hybrid Cloud</h3><p style="font-size:13px;">Menggabungkan public dan private cloud. Data sensitif di lokal, beban kerja umum di public cloud.</p><p style="font-size:12px;color:var(--warning);"><b>Contoh:</b> Aplikasi lokal tersinkron ke AWS Backup.</p></div>
+                </div>
+                <div class="analogy-box" style="margin-top:12px;padding:10px 16px;font-size:13px;">💡 <b>Community Cloud:</b> Berbagi infrastruktur untuk organisasi dengan regulasi/kebutuhan sama (contoh: Cloud Terintegrasi antar Kementerian/Dinas Provinsi).</div>
+            </div>
+            <div class="slide-footer"><span>Dinas Tenaga Kerja Kota Bandung</span><span>Materi 22: Cloud Computing &bull; Slide 6</span></div>
+        </div>
+
+        <!-- SLIDE 7: PROVIDERS (tabs menggunakan this — FIX UTAMA) -->
+        <div class="slide" id="slide-7">
+            <div class="slide-title">Layanan Utama Cloud Global <span class="badge">Detail Provider</span></div>
+            <div class="content-area">
+                <div class="tab-container">
+                    <div class="tab-headers">
+                        <button class="tab-btn active" onclick="switchTab(this, 'prov-aws')"><i class="fa-brands fa-aws"></i> AWS</button>
+                        <button class="tab-btn" onclick="switchTab(this, 'prov-gcp')"><i class="fa-brands fa-google"></i> Google Cloud</button>
+                        <button class="tab-btn" onclick="switchTab(this, 'prov-azure')"><i class="fa-brands fa-microsoft"></i> Azure</button>
+                        <button class="tab-btn" onclick="switchTab(this, 'prov-ali')"><i class="fa-solid fa-cloud"></i> Alibaba Cloud</button>
+                    </div>
+
+                    <div id="prov-aws" class="tab-content active">
+                        <div class="table-wrapper">
+                            <table>
+                                <thead><tr><th>Kategori</th><th>Layanan Utama</th><th>Fungsi</th></tr></thead>
+                                <tbody>
+                                    <tr><td>Compute</td><td>EC2, Lambda, Lightsail, Beanstalk</td><td>Server virtual elastis, serverless, VPS praktis</td></tr>
+                                    <tr><td>Storage</td><td>S3, EBS, Glacier, EFS</td><td>Object storage, block storage EC2, arsip panjang</td></tr>
+                                    <tr><td>Database</td><td>RDS, Aurora, DynamoDB, Redshift</td><td>SQL terkelola, NoSQL cepat, Data Warehouse</td></tr>
+                                    <tr><td>Security/Net</td><td>IAM, VPC, CloudFront, Route 53</td><td>Hak akses, DNS, CDN, Web Firewall</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div id="prov-gcp" class="tab-content">
+                        <div class="table-wrapper">
+                            <table>
+                                <thead><tr><th>Kategori</th><th>Layanan Utama</th><th>Fungsi</th></tr></thead>
+                                <tbody>
+                                    <tr><td>Compute</td><td>Compute Engine, GKE, Cloud Run</td><td>VM skalabel, Managed Kubernetes, serverless</td></tr>
+                                    <tr><td>Storage/DB</td><td>Cloud Storage, Cloud SQL, Spanner</td><td>Berkas cloud, SQL terkelola skala global</td></tr>
+                                    <tr><td>Analytics/AI</td><td>BigQuery, Vertex AI, Gemini API</td><td>Warehouse serverless, platform AI generatif</td></tr>
+                                    <tr><td>Networking</td><td>VPC, Cloud CDN, Global LB</td><td>Jaringan aman, load balancing trafik global</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div id="prov-azure" class="tab-content">
+                        <div class="table-wrapper">
+                            <table>
+                                <thead><tr><th>Kategori</th><th>Layanan Utama</th><th>Fungsi</th></tr></thead>
+                                <tbody>
+                                    <tr><td>Compute</td><td>VMs, Container Apps, AKS, App Service</td><td>VM Win/Linux, kontainer serverless modern</td></tr>
+                                    <tr><td>Storage/DB</td><td>Blob Storage, SQL Database, Cosmos DB</td><td>Object storage, managed SQL, NoSQL global</td></tr>
+                                    <tr><td>AI/Analytics</td><td>Azure OpenAI, Synapse, Fabric</td><td>Integrasi GPT, unified data platform</td></tr>
+                                    <tr><td>Security</td><td>Entra ID, Microsoft Sentinel</td><td>Autentikasi pengguna, pemantauan log cyber</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div id="prov-ali" class="tab-content">
+                        <div class="table-wrapper">
+                            <table>
+                                <thead><tr><th>Kategori</th><th>Layanan Utama</th><th>Fungsi</th></tr></thead>
+                                <tbody>
+                                    <tr><td>Compute/Storage</td><td>ECS, ACK, OSS</td><td>Server elastis, managed kubernetes, file storage</td></tr>
+                                    <tr><td>Database</td><td>ApsaraDB RDS, PolarDB, Redis</td><td>Relasional terkelola, cloud-native, in-memory cache</td></tr>
+                                    <tr><td>Security/AI</td><td>Anti-DDoS, PAI, Tongyi Qianwen</td><td>Proteksi DDoS, engine kecerdasan buatan</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="slide-footer"><span>Dinas Tenaga Kerja Kota Bandung</span><span>Materi 22: Cloud Computing &bull; Slide 7</span></div>
+        </div>
+
+        <!-- SLIDE 8: VPS VS CLOUD VS SHARED HOSTING -->
+        <div class="slide" id="slide-8">
+            <div class="slide-title">VPS & Penyedia Hosting Lokal/Global <span class="badge">Analisis Opsi</span></div>
+            <div class="content-area">
+                <div class="two-column">
+                    <div class="table-wrapper">
+                        <table>
+                            <thead><tr><th>Aspek</th><th>Shared Hosting</th><th>VPS</th><th>Cloud Hosting</th></tr></thead>
+                            <tbody>
+                                <tr><td><b>Resource</b></td><td>Berbagi dengan tetangga</td><td>Dedicated terisolasi</td><td>Elastis & Skalabel tinggi</td></tr>
+                                <tr><td><b>Kontrol</b></td><td>Sangat terbatas</td><td>Akses root penuh</td><td>Sangat tinggi lewat API</td></tr>
+                                <tr><td><b>Biaya</b></td><td>Sangat Murah</td><td>Menengah</td><td>Pay-as-you-go</td></tr>
+                                <tr><td><b>Performa</b></td><td>Tergantung tetangga</td><td>Stabil</td><td>Auto-scale on-demand</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div style="display:flex;flex-direction:column;gap:8px;">
+                        <div class="tile" style="padding:12px 16px;"><h4 style="font-size:14px;"><i class="fa-solid fa-server" style="color:var(--accent);margin-right:6px;"></i>IDCloudHost</h4><p style="font-size:12px;margin:4px 0 0 0;">DC lokal Indonesia (latensi rendah). Mulai Rp 68/jam + One-Click Deploy instan.</p></div>
+                        <div class="tile" style="padding:12px 16px;"><h4 style="font-size:14px;"><i class="fa-solid fa-globe" style="color:var(--accent);margin-right:6px;"></i>Hostinger</h4><p style="font-size:12px;margin:4px 0 0 0;">Control panel hPanel kustom. Performa stabil dengan web server LiteSpeed.</p></div>
+                        <div class="tile" style="padding:12px 16px;"><h4 style="font-size:14px;"><i class="fa-solid fa-code-merge" style="color:var(--accent);margin-right:6px;"></i>Sanberlify & Sumopod</h4><p style="font-size:12px;margin:4px 0 0 0;">Deployment modern berbasis git-push terintegrasi untuk aplikasi modern.</p></div>
+                    </div>
+                </div>
+            </div>
+            <div class="slide-footer"><span>Dinas Tenaga Kerja Kota Bandung</span><span>Materi 22: Cloud Computing &bull; Slide 8</span></div>
+        </div>
+
+        <!-- SLIDE 9: DOCKER KONSEP -->
+        <div class="slide" id="slide-9">
+            <div class="slide-title">Docker: Kontainer Kargo Digital <span class="badge">Containerization</span></div>
+            <div class="content-area">
+                <div class="two-column" style="align-items: start;">
+                    <div>
+                        <h3>Mengapa Menggunakan Docker?</h3>
+                        <p style="font-size:14px;">Mengatasi masalah klase <b>"Berjalan di laptop saya, tapi crash di production"</b>. Docker mengemas program beserta pustaka pendukung secara modular.</p>
+                        <div class="analogy-box" style="background:#eff6ff;border-left-color:#3b82f6;">
+                            <span class="info-badge" style="background:#dbeafe;color:#1e40af;">Analogi Kapal Kontainer</span>
+                            <p style="font-size:13px;line-height:1.4;margin:0;">Memuat karung beras, drum minyak, dan peti kayu ke kapal sangat kacau. Revolusi datang dengan <b>Kontainer Standar</b> yang seragam &mdash; apapun isinya, kontainer ditumpuk rapi di kapal mana pun.</p>
+                        </div>
+                    </div>
+                    <div class="table-wrapper">
+                        <table>
+                            <thead><tr><th>Konsep</th><th>Pengertian</th><th>Analogi OOP</th></tr></thead>
+                            <tbody>
+                                <tr><td><b>Docker Image</b></td><td>Template cetakan sistem</td><td>Class / Blueprint</td></tr>
+                                <tr><td><b>Docker Container</b></td><td>Instance sistem berjalan</td><td>Object dari Class</td></tr>
+                                <tr><td><b>Dockerfile</b></td><td>Instruksi rakit image</td><td>File Kode Resep</td></tr>
+                                <tr><td><b>Docker Registry</b></td><td>Tempat simpan & unduh image</td><td>GitHub / App Store</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="slide-footer"><span>Dinas Tenaga Kerja Kota Bandung</span><span>Materi 22: Cloud Computing &bull; Slide 9</span></div>
+        </div>
+
+        <!-- SLIDE 10: DOCKER VS VM -->
+        <div class="slide" id="slide-10">
+            <div class="slide-title">Performa: Docker vs Virtual Machine <span class="badge">Perbandingan Teknis</span></div>
+            <div class="content-area">
+                <div class="two-column" style="align-items: center;">
+                    <div class="chart-wrapper">
+                        <h3>Metrik Keunggulan Efisiensi</h3>
+                        <div class="chart-row"><div class="chart-label">Waktu Booting</div><div class="chart-bars"><div class="bar-row"><div class="bar-container"><div class="bar-fill bar-docker" style="width:95%;"></div></div><span class="bar-text">Docker: 0.5&ndash;2 detik</span></div><div class="bar-row"><div class="bar-container"><div class="bar-fill bar-vm" style="width:14%;"></div></div><span class="bar-text">VM: 30&ndash;90 detik</span></div></div></div>
+                        <div class="chart-row"><div class="chart-label">Overhead Memori</div><div class="chart-bars"><div class="bar-row"><div class="bar-container"><div class="bar-fill bar-docker" style="width:8%;"></div></div><span class="bar-text">Docker: 5&ndash;10 MB</span></div><div class="bar-row"><div class="bar-container"><div class="bar-fill bar-vm" style="width:95%;"></div></div><span class="bar-text">VM: 512&ndash;2048 MB</span></div></div></div>
+                        <div class="chart-row"><div class="chart-label">Kapasitas / Host</div><div class="chart-bars"><div class="bar-row"><div class="bar-container"><div class="bar-fill bar-docker" style="width:95%;"></div></div><span class="bar-text">Docker: 50&ndash;100+ unit</span></div><div class="bar-row"><div class="bar-container"><div class="bar-fill bar-vm" style="width:14%;"></div></div><span class="bar-text">VM: 5&ndash;15 unit</span></div></div></div>
+                    </div>
+                    <div class="tile" style="border-top-color:var(--primary);">
+                        <div class="icon"><i class="fa-solid fa-microchip"></i></div>
+                        <h3>Mengapa Docker Lebih Ringan?</h3>
+                        <p style="font-size:13px;line-height:1.5;"><b>Container Docker</b> berbagi kernel OS host secara langsung, mengisolasi resource pada level proses. <b>Virtual Machine</b> memerlukan instalasi Guest OS utuh di atas Hypervisor, memakan RAM dan storage ekstra besar.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="slide-footer"><span>Dinas Tenaga Kerja Kota Bandung</span><span>Materi 22: Cloud Computing &bull; Slide 10</span></div>
+        </div>
+
+        <!-- SLIDE 11: DOCKER COMPOSE & UPDATE 2026 -->
+        <div class="slide" id="slide-11">
+            <div class="slide-title">Multi-Container & Update 2026 <span class="badge">Teknologi Terkini</span></div>
+            <div class="content-area">
+                <div class="two-column" style="align-items: stretch;">
+                    <div style="display:flex;flex-direction:column;min-height:0;">
+                        <h3>Docker Compose (<code style="background:var(--light);padding:2px 6px;border-radius:4px;font-size:13px;">docker-compose.yml</code>)</h3>
+                        <p style="font-size:13px;margin-bottom:8px;">Mengatur banyak layanan sekaligus (Web + DB) dengan satu file:</p>
+                        <pre class="code-block"><code><span class="kw">version</span>: <span class="str">'3'</span>
+<span class="kw">services</span>:
+  <span class="key">web</span>:
+    <span class="key">image</span>: <span class="str">nginx:latest</span>
+    <span class="key">ports</span>:
+      - <span class="str">"80:80"</span>
+  <span class="key">db</span>:
+    <span class="key">image</span>: <span class="str">postgres:16</span>
+    <span class="key">environment</span>:
+      <span class="key">POSTGRES_PASSWORD</span>: <span class="str">rahasia</span>
+    <span class="key">volumes</span>:
+      - <span class="str">db_data:/var/lib/postgresql/data</span>
+<span class="kw">volumes</span>:
+  <span class="key">db_data</span>:</code></pre>
+                    </div>
+                    <div style="display:flex;flex-direction:column;gap:10px;">
+                        <div class="tile" style="flex:1;border-top-color:var(--success);"><h4 style="font-size:15px;"><i class="fa-solid fa-robot" style="color:var(--success);margin-right:6px;"></i>AI-Native Development (2026)</h4><p style="font-size:13px;margin:0;">Docker Desktop terintegrasi agen AI untuk optimasi layer Dockerfile secara real-time dan predictive debugging log error.</p></div>
+                        <div class="tile" style="flex:1;border-top-color:var(--warning);"><h4 style="font-size:15px;"><i class="fa-solid fa-bolt" style="color:var(--warning);margin-right:6px;"></i>WebAssembly (Wasm)</h4><p style="font-size:13px;margin:0;">Runtime non-Linux super ringan untuk mikroservis di perangkat edge dengan kebutuhan resource minimal.</p></div>
+                        <div class="tile" style="flex:1;border-top-color:#8b5cf6;"><h4 style="font-size:15px;"><i class="fa-solid fa-cubes" style="color:#8b5cf6;margin-right:6px;"></i>Docker + Kubernetes</h4><p style="font-size:13px;margin:0;">Orkestrasi container skala besar untuk production: auto-healing, rolling update, dan service discovery otomatis.</p></div>
+                    </div>
+                </div>
+            </div>
+            <div class="slide-footer"><span>Dinas Tenaga Kerja Kota Bandung</span><span>Materi 22: Cloud Computing &bull; Slide 11</span></div>
+        </div>
+
+        <!-- SLIDE 12: ROLE SYSTEM ANALYST -->
+        <div class="slide" id="slide-12">
+            <div class="slide-title">Tugas System Analyst <span class="badge">Kompetensi Standar</span></div>
+            <div class="content-area">
+                <div class="three-column">
+                    <div class="tile"><div class="icon"><i class="fa-solid fa-chart-line"></i></div><h3>1. Analisis Kebutuhan</h3><p style="font-size:13px;">Menghitung kapasitas data tahunan, proyeksi lonjakan trafik jam sibuk, dan standar ketaatan regulasi data nasional.</p></div>
+                    <div class="tile" style="border-top-color:var(--success);"><div class="icon" style="color:var(--success);"><i class="fa-solid fa-network-wired"></i></div><h3>2. Arsitektur Solusi</h3><p style="font-size:13px;">Memutuskan jenis database (SQL vs NoSQL), pemilihan tier VPS/Cloud, dan instalasi Web Application Firewall.</p></div>
+                    <div class="tile" style="border-top-color:var(--warning);"><div class="icon" style="color:var(--warning);"><i class="fa-solid fa-shield-halved"></i></div><h3>3. Perencanaan Keamanan</h3><p style="font-size:13px;">Merancang integrasi autentikasi (SSO/OAuth), skema RBAC, serta strategi Disaster Recovery.</p></div>
+                </div>
+                <div class="analogy-box" style="margin-top:12px;padding:12px 18px;"><p style="font-size:13px;margin:0;"><b>Pertanyaan Kunci Analis:</b> <em>"Berapa target uptime? Di mana backup data disimpan? Apakah sistem harus auto-scaling otomatis? Berapa RTO dan RPO yang diizinkan?"</em></p></div>
+            </div>
+            <div class="slide-footer"><span>Dinas Tenaga Kerja Kota Bandung</span><span>Materi 22: Cloud Computing &bull; Slide 12</span></div>
+        </div>
+
+        <!-- SLIDE 13: MAPPING AKADEMIK -->
+        <div class="slide" id="slide-13">
+            <div class="slide-title">Studi Kasus: Mapping Sistem Akademik <span class="badge">Infrastruktur</span></div>
+            <div class="content-area">
+                <div class="table-wrapper">
+                    <table>
+                        <thead><tr><th style="width:22%;">Kebutuhan Aplikasi</th><th style="width:26%;">Non-Cloud (Fisik)</th><th style="width:26%;">Pemetaan Cloud</th><th style="width:26%;">Contoh Layanan</th></tr></thead>
+                        <tbody>
+                            <tr><td><b>Online 24 Jam</b></td><td>Server fisik di kantor</td><td>Cloud Virtual Machines</td><td>AWS EC2 / Azure VM</td></tr>
+                            <tr><td><b>Trafik Membludak (KRS)</b></td><td>Tambah komputer server baru</td><td>Auto Scaling & Load Balancer</td><td>AWS ASG / GCP ELB</td></tr>
+                            <tr><td><b>Upload Scan Ijazah</b></td><td>Tambah harddisk lokal</td><td>Object Cloud Storage</td><td>Amazon S3 / Alibaba OSS</td></tr>
+                            <tr><td><b>Basis Data Transaksi</b></td><td>Setup MySQL di server lokal</td><td>Managed RDBMS Service</td><td>Cloud SQL / Amazon RDS</td></tr>
+                            <tr><td><b>Keamanan & Kecepatan</b></td><td>Kabel WAN lokal</td><td>VPC + CDN Global</td><td>Route 53 + CloudFront</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="analogy-box" style="margin-top:10px;padding:10px 16px;font-size:13px;">📐 <b>Pola Pikir Mapping:</b> Setiap kebutuhan fungsional di SRS harus punya "pasangan" infrastruktur cloud. Jika ada kebutuhan tanpa pemetaan, berarti ada celah arsitektur.</div>
+            </div>
+            <div class="slide-footer"><span>Dinas Tenaga Kerja Kota Bandung</span><span>Materi 22: Cloud Computing &bull; Slide 13</span></div>
+        </div>
+
+        <!-- SLIDE 14: SRS IMPLEMENTATION -->
+        <div class="slide" id="slide-14">
+            <div class="slide-title">Cloud Requirements dalam SRS <span class="badge">Dokumen Standar</span></div>
+            <div class="content-area">
+                <div class="two-column" style="align-items: stretch;">
+                    <div class="tile" style="height:100%;"><h3>Kebutuhan Fungsional (FR)</h3><ul style="padding-left:18px;font-size:13px;display:flex;flex-direction:column;gap:8px;"><li>Sistem harus terintegrasi dengan cloud storage gateway untuk upload dokumen laporan masyarakat.</li><li>Sistem harus melakukan backup database otomatis terjadwal setiap hari ke server cadangan cloud.</li><li>Sistem harus mengirim notifikasi push real-time menggunakan layanan cloud messaging pihak ketiga.</li></ul></div>
+                    <div class="tile" style="height:100%;border-top-color:var(--success);"><h3>Kebutuhan Non-Fungsional (NFR)</h3><ul style="padding-left:18px;font-size:13px;display:flex;flex-direction:column;gap:8px;"><li><b>Availability:</b> Uptime minimal 99.9%.</li><li><b>Scalability:</b> Auto-scaling horizontal hingga 10x beban puncak tanpa downtime.</li><li><b>Security:</b> HTTPS (TLS 1.3) untuk transmisi, AES-256 untuk data at-rest.</li><li><b>Disaster Recovery:</b> RTO &lt; 4 jam, RPO &lt; 1 jam.</li><li><b>Latency:</b> Respons API &lt; 200ms pada kondisi normal.</li></ul></div>
+                </div>
+            </div>
+            <div class="slide-footer"><span>Dinas Tenaga Kerja Kota Bandung</span><span>Materi 22: Cloud Computing &bull; Slide 14</span></div>
+        </div>
+
+        <!-- SLIDE 15: CASE STUDY DISNAKER -->
+        <div class="slide" id="slide-15">
+            <div class="slide-title">Studi Kasus: Aplikasi Pelayanan Publik <span class="badge">Praktik Lapangan</span></div>
+            <div class="content-area">
+                <div class="two-column" style="grid-template-columns:1fr 1.1fr;align-items:stretch;">
+                    <div style="display:flex;flex-direction:column;gap:10px;">
+                        <h3>Sistem Informasi Disnaker</h3>
+                        <p style="font-size:14px;">Merancang sistem penanganan laporan pencari kerja dengan arsitektur cloud terdistribusi:</p>
+                        <ul style="font-size:13px;padding-left:0;list-style:none;display:flex;flex-direction:column;gap:8px;">
+                            <li style="display:flex;gap:10px;align-items:flex-start;"><i class="fa-solid fa-circle-check" style="color:var(--success);font-size:15px;margin-top:3px;flex-shrink:0;"></i><span><b>Frontend & Backend:</b> Di-package ke Docker Container untuk pengujian staging maupun cloud.</span></li>
+                            <li style="display:flex;gap:10px;align-items:flex-start;"><i class="fa-solid fa-circle-check" style="color:var(--success);font-size:15px;margin-top:3px;flex-shrink:0;"></i><span><b>Database:</b> Managed MySQL (RDS/Cloud SQL) dengan enkripsi penuh untuk data NIK & KTP.</span></li>
+                            <li style="display:flex;gap:10px;align-items:flex-start;"><i class="fa-solid fa-circle-check" style="color:var(--success);font-size:15px;margin-top:3px;flex-shrink:0;"></i><span><b>Penyimpanan Gambar:</b> Upload lampiran laporan langsung ke Object Storage S3 via API.</span></li>
+                        </ul>
+                    </div>
+                    <div class="image-wrapper-custom"><img src="https://picsum.photos/seed/disnaker-dash-2026/700/500.jpg" alt="Dashboard Monitoring Disnaker Cloud"></div>
+                </div>
+            </div>
+            <div class="slide-footer"><span>Dinas Tenaga Kerja Kota Bandung</span><span>Materi 22: Cloud Computing &bull; Slide 15</span></div>
+        </div>
+
+        <!-- SLIDE 16: PBL ROADMAP -->
+        <div class="slide" id="slide-16">
+            <div class="slide-title">Project Based Learning Roadmap <span class="badge">Tugas Mandiri</span></div>
+            <div class="content-area" style="justify-content:center;">
+                <div class="timeline">
+                    <div class="timeline-line"></div>
+                    <div class="timeline-step active"><div class="step-num">1</div><h3 style="font-size:18px;">Analisis</h3><p style="font-size:12px;margin-top:6px;color:#64748b;">Hitung user aktif harian & jenis berkas data aplikasi Anda.</p></div>
+                    <div class="timeline-step"><div class="step-num">2</div><h3 style="font-size:18px;">Mapping</h3><p style="font-size:12px;margin-top:6px;color:#64748b;">Pilih tipe compute (VPS/Cloud) & jenis managed database.</p></div>
+                    <div class="timeline-step"><div class="step-num">3</div><h3 style="font-size:18px;">Dockerize</h3><p style="font-size:12px;margin-top:6px;color:#64748b;">Buat draf Dockerfile untuk aplikasi Anda.</p></div>
+                    <div class="timeline-step"><div class="step-num">4</div><h3 style="font-size:18px;">Update SRS</h3><p style="font-size:12px;margin-top:6px;color:#64748b;">Tulis spek NFR cloud & database ke draf SRS.</p></div>
+                </div>
+                <div class="analogy-box" style="background:#fffbeb;border-left-color:#d97706;margin-top:20px;padding:16px 20px;"><p style="font-size:14px;margin:0;text-align:center;font-weight:700;color:#b45309;"><i class="fa-solid fa-circle-exclamation" style="margin-right:6px;"></i>KELUARAN TUGAS: Setiap kelompok wajib mengunggah dokumen SRS dengan bab khusus <em>"Arsitektur Cloud & Containerization"</em>.</p></div>
+            </div>
+            <div class="slide-footer"><span>Dinas Tenaga Kerja Kota Bandung</span><span>Materi 22: Cloud Computing &bull; Slide 16</span></div>
+        </div>
+
+        <!-- SLIDE 17: OUTRO -->
+        <div class="slide bleed-layout" id="slide-17">
+            <div class="bleed-text">
+                <div>
+                    <p style="text-transform:uppercase;letter-spacing:3px;color:var(--accent);font-weight:700;font-size:13px;">Materi 22 Selesai</p>
+                    <h2 style="font-size:44px;margin-top:15px;">Terima Kasih,<br>Analis Handal!</h2>
+                    <p style="margin-top:18px;font-size:15px;">Sesi tanya jawab (Q&A) dibuka. Silakan mempersiapkan pertanyaan terbaik Anda.</p>
+                </div>
+                <div><div class="analogy-box" style="margin:0;background:var(--light);border-left-color:var(--primary);"><p style="font-size:13px;margin:0;font-weight:700;color:var(--primary);">System Analyst Certification 2026</p><p style="font-size:12px;margin:2px 0 0 0;color:#64748b;">Dinas Tenaga Kerja Kota Bandung &bull; Tingkat Kompetensi Ahli Madya</p></div></div>
+            </div>
+            <div class="bleed-media">
+                <img src="https://picsum.photos/seed/team-synergy-bandung/700/720.jpg" alt="Team Synergy Disnaker Bandung">
+                <div class="bleed-media-overlay"><h3 style="color:white;font-size:26px;margin-bottom:5px;">Bersama, Kita Lebih Kuat!</h3><p style="color:#cbd5e1;font-size:14px;margin:0;">Sampai jumpa di kelas praktik besok pagi.</p></div>
+            </div>
+        </div>
+
+        <!-- SLIDE CONTROLS -->
+        <div class="slide-controls">
+            <button class="control-btn" id="prev-btn" onclick="navigateSlide(-1)" aria-label="Slide sebelumnya"><i class="fa-solid fa-chevron-left"></i></button>
+            <span class="slide-indicator" id="slide-num">1 / 17</span>
+            <button class="control-btn" id="next-btn" onclick="navigateSlide(1)" aria-label="Slide berikutnya"><i class="fa-solid fa-chevron-right"></i></button>
+        </div>
+    </div>
+
+    <script>
+        var totalSlides = 17;
+        var currentSlide = 1;
+
+        /* ========== SCALE ENGINE ========== */
+        function scalePresentation() {
+            var wrapper = document.getElementById('presentation');
+            if (!wrapper) return;
+            var wW = window.innerWidth || document.documentElement.clientWidth || 1280;
+            var wH = window.innerHeight || document.documentElement.clientHeight || 720;
+            var s = Math.min(wW / 1280, wH / 720) * 0.94;
+            if (isNaN(s) || s <= 0) s = 1;
+            if (s < 0.15) s = 0.15;
+            wrapper.style.transform = 'scale(' + s + ')';
+        }
+
+        /* ========== SLIDE NAVIGATION ========== */
+        function navigateSlide(dir) {
+            var next = currentSlide + dir;
+            if (next < 1 || next > totalSlides) return;
+            var curEl = document.getElementById('slide-' + currentSlide);
+            curEl.style.opacity = '0';
+            curEl.style.transition = 'opacity 0.2s ease';
+            setTimeout(function() {
+                curEl.classList.remove('active');
+                curEl.style.opacity = '';
+                curEl.style.transition = '';
+                currentSlide = next;
+                var nextEl = document.getElementById('slide-' + currentSlide);
+                nextEl.classList.add('active');
+                document.getElementById('slide-num').innerText = currentSlide + ' / ' + totalSlides;
+                document.getElementById('progress-bar').style.width = ((currentSlide / totalSlides) * 100) + '%';
+                if (currentSlide === 16) animateTimeline();
+            }, 200);
+        }
+
+        /* ========== TAB SWITCHING (FIX: pakai `this`, bukan `event.currentTarget`) ========== */
+        function switchTab(btn, tabId) {
+            // Temukan semua tombol saudara di header yang sama
+            var header = btn.parentElement;
+            var allBtns = header.querySelectorAll('.tab-btn');
+            for (var i = 0; i < allBtns.length; i++) {
+                allBtns[i].classList.remove('active');
+            }
+            btn.classList.add('active');
+
+            // Temukan semua konten tab di container yang sama
+            var container = header.parentElement;
+            var allContents = container.querySelectorAll('.tab-content');
+            for (var j = 0; j < allContents.length; j++) {
+                allContents[j].classList.remove('active');
+            }
+
+            // Tampilkan konten yang dipilih
+            var target = document.getElementById(tabId);
+            if (target) target.classList.add('active');
+        }
+
+        /* ========== TIMELINE ANIMATION ========== */
+        function animateTimeline() {
+            var steps = document.querySelectorAll('#slide-16 .timeline-step');
+            for (var i = 0; i < steps.length; i++) {
+                (function(step, idx) {
+                    step.classList.remove('active');
+                    setTimeout(function() { step.classList.add('active'); }, idx * 300);
+                })(steps[i], i);
+            }
+        }
+
+        /* ========== KEYBOARD ========== */
+        document.addEventListener('keydown', function(e) {
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+            if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') { e.preventDefault(); navigateSlide(1); }
+            else if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); navigateSlide(-1); }
+            else if (e.key === 'Home') { e.preventDefault(); if (currentSlide !== 1) { currentSlide = 0; navigateSlide(1); } }
+            else if (e.key === 'End') { e.preventDefault(); if (currentSlide !== totalSlides) { currentSlide = totalSlides - 1; navigateSlide(1); } }
+        });
+
+        /* ========== TOUCH SWIPE ========== */
+        (function() {
+            var sx = 0;
+            var el = document.getElementById('presentation');
+            el.addEventListener('touchstart', function(e) { sx = e.changedTouches[0].screenX; }, { passive: true });
+            el.addEventListener('touchend', function(e) {
+                var diff = sx - e.changedTouches[0].screenX;
+                if (Math.abs(diff) > 50) { navigateSlide(diff > 0 ? 1 : -1); }
+            }, { passive: true });
+        })();
+
+        /* ========== INIT ========== */
+        window.onload = function() {
+            scalePresentation();
+            window.addEventListener('resize', scalePresentation);
+            document.getElementById('progress-bar').style.width = ((1 / totalSlides) * 100) + '%';
+        };
+    </script>
+</body>
+</html>
